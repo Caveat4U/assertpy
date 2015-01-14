@@ -29,6 +29,7 @@
 """Fluent assertion framework for better, more readable tests."""
 
 import re
+from os.path import isfile
 
 def assert_that(val):
     """Factory method for the assertion builder."""
@@ -43,9 +44,34 @@ class AssertionBuilder(object):
 
     def is_equal_to(self, other):
         """Asserts that val is equal to other."""
+        if type(self.val) is file and type(other) is file:
+            file_is_equal_to(other)
         if self.val != other:
             raise AssertionError('Expected <%s> to be equal to <%s>, but was not.' % (self.val, other))
         return self
+
+    def file_is_equal_to(self, other):
+        """Asserts that entire file is equal to another using an open fp."""
+        if type(self.val) is str and type(other) is str:
+            # Need to open the file if strings were passed in.
+            if not isfile(self.val):
+                raise AssertionError("The file <%s> does not exist." % self.val)
+            if not isfile(other):
+                raise AssertionError("The file <%s> does not exist." % other)
+            first_fp = open(self.val, "r")
+            other_fp = open(other, "r")
+        else:
+            first_fp = self.val
+            other_fp = other
+        """Potential issue - files are too big to keep in active buffer"""
+        if first_fp.read() != other_fp.read():
+            raise AssertionError('Expected file <%s> to be equal to <%s>, but was not.' % (first_fp.name, other_fp.name))
+        return self
+
+    def file_exists(self):
+        """ This is just a wrapper function around the os.path.isfile function. It needs to be defined so that a user can run the test. """
+        if not isfile(self.val):
+            raise AssertionError("Expected file <%s> to exist, but it does not." % self.val)
 
     def is_not_equal_to(self, other):
         """Asserts that val is not equal to other."""
