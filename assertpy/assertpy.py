@@ -44,6 +44,7 @@ class AssertionBuilder(object):
 
     def is_equal_to(self, other):
         """Asserts that val is equal to other."""
+        # If the values passed in are of type file, then pass it on to the other test function.
         if type(self.val) is file and type(other) is file:
             file_is_equal_to(other)
         if self.val != other:
